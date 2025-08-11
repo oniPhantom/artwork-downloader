@@ -1,0 +1,33 @@
+{
+  "name": "artwork-downloader",
+  "version": "1.0.0",
+  "description": "iTunes APIを使用して楽曲のアルバムアートを検索・ダウンロードできるWebアプリケーション",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "artwork",
+    "album-art",
+    "itunes-api",
+    "music",
+    "download",
+    "vite",
+    "javascript"
+  ],
+  "author": "htk",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/htk/artwork-downloader.git"
+  },
+  "homepage": "https://github.com/htk/artwork-downloader#readme",
+  "bugs": {
+    "url": "https://github.com/htk/artwork-downloader/issues"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}

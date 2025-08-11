@@ -1,0 +1,373 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN', 'Yu Gothic', 'メイリオ', Meiryo, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+
+  --primary-color: #4f46e5;
+  --primary-hover: #3730a3;
+  --secondary-color: #6b7280;
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, var(--bg-color) 0%, #e0e7ff 100%);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.search-form {
+  background: var(--card-bg);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.search-btn {
+  width: 100%;
+  padding: 0.875rem 2rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.search-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.search-btn:active {
+  transform: translateY(0);
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+}
+
+.loading-spinner-large {
+  font-size: 3rem;
+  animation: spin 1s linear infinite;
+}
+
+.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.error-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.results {
+  margin-top: 2rem;
+}
+
+.results h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+
+.artwork-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.artwork-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.artwork-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.artwork-image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.artwork-info {
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.artwork-info h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.artwork-info p {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.download-btn {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.download-btn:hover {
+  background: #059669;
+}
+
+.source-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 0.5rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  #app {
+    padding: 1rem;
+  }
+  
+  .header h1 {
+    font-size: 2rem;
+  }
+  
+  .header p {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+  
+  .search-form {
+    padding: 1.5rem;
+    margin: 0 0.5rem 2rem;
+    border-radius: 12px;
+  }
+  
+  .artwork-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 0 0.5rem;
+  }
+  
+  .search-btn {
+    min-height: 48px;
+    touch-action: manipulation;
+    font-size: 1.1rem;
+  }
+  
+  .download-btn {
+    min-height: 44px;
+    touch-action: manipulation;
+    font-size: 1rem;
+  }
+  
+  .artwork-image {
+    touch-action: manipulation;
+    height: 280px;
+  }
+  
+  .form-group input {
+    min-height: 48px;
+    font-size: 16px;
+    padding: 1rem;
+  }
+  
+  .form-group label {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .error {
+    margin: 0 0.5rem 2rem;
+    padding: 1.5rem 1rem;
+  }
+  
+  .loading {
+    padding: 2rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #app {
+    padding: 0.75rem;
+  }
+  
+  .header {
+    margin-bottom: 2rem;
+  }
+  
+  .header h1 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+  
+  .header p {
+    font-size: 0.95rem;
+    padding: 0 0.5rem;
+  }
+  
+  .search-form {
+    padding: 1rem;
+    margin: 0 0 2rem;
+    border-radius: 8px;
+  }
+  
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-group label {
+    font-size: 1rem;
+  }
+  
+  .form-group input {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 0.875rem;
+  }
+  
+  .search-btn {
+    min-height: 44px;
+    font-size: 1rem;
+    padding: 1rem;
+  }
+  
+  .artwork-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0;
+  }
+  
+  .artwork-card {
+    padding: 1.25rem;
+  }
+  
+  .artwork-image {
+    height: 250px;
+  }
+  
+  .error {
+    margin: 0 0 2rem;
+    padding: 1.25rem 1rem;
+    border-radius: 6px;
+  }
+  
+  .loading {
+    padding: 1.5rem 1rem;
+  }
+  
+  .results h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
