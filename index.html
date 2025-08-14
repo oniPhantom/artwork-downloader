@@ -64,9 +64,18 @@
             <input type="text" id="lastfm-api-key" placeholder="Last.fm APIキー（オプション）">
           </div>
           
+          <div class="api-setting">
+            <h3>デバッグ設定</h3>
+            <label>
+              <input type="checkbox" id="debug-mode"> 詳細ログを有効にする
+            </label>
+            <p><small>APIエラーの詳細情報をコンソールに出力します</small></p>
+          </div>
+          
           <div class="modal-buttons">
             <button id="save-api-settings" class="primary-btn">保存</button>
             <button id="close-api-settings" class="secondary-btn">閉じる</button>
+            <button id="show-error-logs" class="secondary-btn">エラーログを表示</button>
           </div>
         </div>
       </div>

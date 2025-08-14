@@ -72,7 +72,20 @@ class LastFmAPI {
       })
       
       const url = `${this.baseUrl}?${params.toString()}`
-      const data = await this.jsonpRequest(url)
+      
+      let data
+      if (this.isProduction()) {
+        // 本番環境：プロキシを使用
+        try {
+          data = await this.fetchViaProxy(url)
+        } catch (proxyError) {
+          console.warn('Last.fmプロキシエラー、JSONPにフォールバック:', proxyError)
+          data = await this.jsonpRequest(url)
+        }
+      } else {
+        // 開発環境：直接JSONP
+        data = await this.jsonpRequest(url)
+      }
       
       if (data.results && data.results.trackmatches && data.results.trackmatches.track) {
         return data.results.trackmatches.track
@@ -133,6 +146,22 @@ class LastFmAPI {
       console.error('Last.fmアルバム情報取得エラー:', error)
       return null
     }
+  }
+
+  // 本番環境でプロキシを使用するための検出
+  isProduction() {
+    return window.location.hostname !== 'localhost' && 
+           window.location.hostname !== '127.0.0.1'
+  }
+
+  // プロキシ経由でAPIリクエスト
+  async fetchViaProxy(url) {
+    const proxyUrl = `/api/proxy?service=lastfm&url=${encodeURIComponent(url)}`
+    const response = await fetch(proxyUrl)
+    if (!response.ok) {
+      throw new Error(`Proxy error: ${response.statusText}`)
+    }
+    return await response.json()
   }
 
   // アーティストと曲名で検索してアートワークを取得

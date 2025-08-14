@@ -60,7 +60,20 @@ class DeezerAPI {
       const query = encodeURIComponent(`artist:"${artist}" track:"${song}"`)
       const url = `${this.baseUrl}/search?q=${query}&limit=20`
       
-      const data = await this.jsonpRequest(url)
+      let data
+      
+      if (this.isProduction()) {
+        // 本番環境：プロキシを使用
+        try {
+          data = await this.fetchViaProxy(url)
+        } catch (proxyError) {
+          console.warn('Deezerプロキシエラー、JSONPにフォールバック:', proxyError)
+          data = await this.jsonpRequest(url)
+        }
+      } else {
+        // 開発環境：直接JSONP
+        data = await this.jsonpRequest(url)
+      }
       
       if (data.data && Array.isArray(data.data)) {
         return data.data
@@ -73,7 +86,18 @@ class DeezerAPI {
         const query = encodeURIComponent(`${artist} ${song}`)
         const url = `${this.baseUrl}/search?q=${query}&limit=20`
         
-        const data = await this.jsonpRequest(url)
+        let data
+        
+        if (this.isProduction()) {
+          try {
+            data = await this.fetchViaProxy(url)
+          } catch (proxyError) {
+            console.warn('Deezerプロキシエラー（フォールバック）:', proxyError)
+            data = await this.jsonpRequest(url)
+          }
+        } else {
+          data = await this.jsonpRequest(url)
+        }
         
         if (data.data && Array.isArray(data.data)) {
           return data.data
@@ -84,6 +108,22 @@ class DeezerAPI {
       
       return []
     }
+  }
+
+  // 本番環境でプロキシを使用するための検出
+  isProduction() {
+    return window.location.hostname !== 'localhost' && 
+           window.location.hostname !== '127.0.0.1'
+  }
+
+  // プロキシ経由でAPIリクエスト
+  async fetchViaProxy(url) {
+    const proxyUrl = `/api/proxy?service=deezer&url=${encodeURIComponent(url)}`
+    const response = await fetch(proxyUrl)
+    if (!response.ok) {
+      throw new Error(`Proxy error: ${response.statusText}`)
+    }
+    return await response.json()
   }
 
   // アーティストと曲名で検索してアートワークを取得

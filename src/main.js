@@ -11,6 +11,13 @@ class ArtworkDownloader {
     // 代替API
     this.lastfmAPI = new LastFmAPI()
     this.deezerAPI = new DeezerAPI()
+    
+    // 本番環境の検出
+    this.isProduction = window.location.hostname !== 'localhost' && 
+                       window.location.hostname !== '127.0.0.1'
+    
+    // デバッグログ機能
+    this.debugMode = localStorage.getItem('debug_mode') === 'true'
   }
 
   initEventListeners() {
@@ -22,6 +29,7 @@ class ArtworkDownloader {
     const apiSettingsModal = document.getElementById('api-settings-modal')
     const saveApiSettingsBtn = document.getElementById('save-api-settings')
     const closeApiSettingsBtn = document.getElementById('close-api-settings')
+    const showErrorLogsBtn = document.getElementById('show-error-logs')
     
     apiSettingsBtn.addEventListener('click', () => {
       this.showApiSettings()
@@ -33,6 +41,10 @@ class ArtworkDownloader {
     
     closeApiSettingsBtn.addEventListener('click', () => {
       this.hideApiSettings()
+    })
+    
+    showErrorLogsBtn.addEventListener('click', () => {
+      this.showErrorLogs()
     })
     
     // モーダル外クリックで閉じる
@@ -82,23 +94,30 @@ class ArtworkDownloader {
   async searchArtworks(artist, song) {
     const artworks = []
     const errors = []
+    const searchContext = { artist, song, timestamp: new Date().toISOString() }
+
+    this.debugLog('SEARCH', 'Started', searchContext)
 
     // iTunes API
     try {
+      this.debugLog('iTunes', 'Starting search', { artist, song })
       const itunesResults = await this.searchiTunes(artist, song)
       artworks.push(...itunesResults)
+      this.debugLog('iTunes', 'Success', { resultCount: itunesResults.length })
     } catch (error) {
-      console.warn('iTunes検索エラー:', error)
+      this.errorLog('iTunes', 'Search failed', error, searchContext)
       errors.push('iTunes')
     }
 
     // Deezer API（iTunesが失敗または結果が少ない場合）
     if (artworks.length < 6) {
       try {
+        this.debugLog('Deezer', 'Starting search', { artist, song, currentResults: artworks.length })
         const deezerResults = await this.deezerAPI.search(artist, song)
         artworks.push(...deezerResults)
+        this.debugLog('Deezer', 'Success', { resultCount: deezerResults.length, totalResults: artworks.length })
       } catch (error) {
-        console.warn('Deezer検索エラー:', error)
+        this.errorLog('Deezer', 'Search failed', error, searchContext)
         errors.push('Deezer')
       }
     }
@@ -106,17 +125,21 @@ class ArtworkDownloader {
     // Last.fm API（まだ結果が少ない場合）
     if (artworks.length < 6) {
       try {
+        this.debugLog('Last.fm', 'Starting search', { artist, song, currentResults: artworks.length })
         const lastfmResults = await this.lastfmAPI.search(artist, song)
         artworks.push(...lastfmResults)
+        this.debugLog('Last.fm', 'Success', { resultCount: lastfmResults.length, totalResults: artworks.length })
       } catch (error) {
-        console.warn('Last.fm検索エラー:', error)
+        this.errorLog('Last.fm', 'Search failed', error, searchContext)
         errors.push('Last.fm')
       }
     }
 
     // 全てのAPIが失敗した場合
     if (artworks.length === 0 && errors.length >= 3) {
-      throw new Error('全ての音楽サービスへの接続に失敗しました')
+      const finalError = new Error('全ての音楽サービスへの接続に失敗しました')
+      this.errorLog('SEARCH', 'All APIs failed', finalError, { errors, searchContext })
+      throw finalError
     }
 
     // 重複を除去（同じ画像URLを持つものを削除）
@@ -127,7 +150,14 @@ class ArtworkDownloader {
       }
     })
 
-    return Array.from(uniqueArtworks.values())
+    const finalResults = Array.from(uniqueArtworks.values())
+    this.debugLog('SEARCH', 'Completed', { 
+      totalFound: artworks.length, 
+      uniqueResults: finalResults.length,
+      failedServices: errors 
+    })
+
+    return finalResults
   }
 
   // JSONP でiTunes APIを呼び出し
@@ -205,7 +235,28 @@ class ArtworkDownloader {
         const encodedTerm = encodeURIComponent(term)
         const url = `https://itunes.apple.com/search?term=${encodedTerm}&media=music&entity=album,song&limit=20`
         
-        const data = await this.jsonpRequest(url)
+        let data
+        
+        if (this.isProduction) {
+          // 本番環境：プロキシを使用
+          try {
+            this.debugLog('iTunes', 'Using proxy', { url })
+            const proxyUrl = `/api/proxy?service=itunes&url=${encodeURIComponent(url)}`
+            const response = await fetch(proxyUrl)
+            if (!response.ok) {
+              throw new Error(`Proxy error: ${response.statusText}`)
+            }
+            data = await response.json()
+            this.debugLog('iTunes', 'Proxy success', { resultCount: data.results?.length || 0 })
+          } catch (proxyError) {
+            this.debugLog('iTunes', 'Proxy failed, fallback to JSONP', { error: proxyError.message })
+            data = await this.jsonpRequest(url)
+          }
+        } else {
+          // 開発環境：直接JSONP
+          this.debugLog('iTunes', 'Using JSONP', { url })
+          data = await this.jsonpRequest(url)
+        }
         
         if (data.results && data.results.length > 0) {
           const uniqueArtworks = new Map()
@@ -466,6 +517,48 @@ class ArtworkDownloader {
     document.getElementById('results').style.display = 'none'
   }
 
+  // デバッグログ関数
+  debugLog(service, action, details) {
+    if (this.debugMode || !this.isProduction) {
+      const timestamp = new Date().toISOString()
+      console.log(`[${timestamp}] ${service} - ${action}:`, details)
+    }
+  }
+
+  // エラーログ関数
+  errorLog(service, action, error, context = {}) {
+    const timestamp = new Date().toISOString()
+    const errorInfo = {
+      timestamp,
+      service,
+      action,
+      error: {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      },
+      context,
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      isProduction: this.isProduction
+    }
+    
+    console.error(`[${timestamp}] ERROR ${service} - ${action}:`, errorInfo)
+    
+    // 本番環境では詳細なエラー情報をLocalStorageに保存（デバッグ用）
+    if (this.isProduction) {
+      try {
+        const existingLogs = JSON.parse(localStorage.getItem('error_logs') || '[]')
+        existingLogs.push(errorInfo)
+        // 最新の50件まで保持
+        const recentLogs = existingLogs.slice(-50)
+        localStorage.setItem('error_logs', JSON.stringify(recentLogs))
+      } catch (e) {
+        console.warn('エラーログの保存に失敗:', e)
+      }
+    }
+  }
+
   showApiSettings() {
     const modal = document.getElementById('api-settings-modal')
     modal.style.display = 'flex'
@@ -473,6 +566,10 @@ class ArtworkDownloader {
     // 現在の設定を表示
     const lastfmKey = localStorage.getItem('lastfm_api_key') || ''
     document.getElementById('lastfm-api-key').value = lastfmKey
+    
+    // デバッグモードの状態を表示
+    const debugMode = localStorage.getItem('debug_mode') === 'true'
+    document.getElementById('debug-mode').checked = debugMode
   }
 
   hideApiSettings() {
@@ -481,6 +578,7 @@ class ArtworkDownloader {
 
   saveApiSettings() {
     const lastfmKey = document.getElementById('lastfm-api-key').value.trim()
+    const debugMode = document.getElementById('debug-mode').checked
     
     // LocalStorageに保存（注意: より安全な方法として、バックエンドでの管理を推奨）
     if (lastfmKey) {
@@ -500,6 +598,10 @@ class ArtworkDownloader {
       localStorage.removeItem('lastfm_api_key')
       this.lastfmAPI.apiKey = null
     }
+    
+    // デバッグモードの保存
+    localStorage.setItem('debug_mode', debugMode.toString())
+    this.debugMode = debugMode
     
     this.hideApiSettings()
     this.showSuccess('API設定を保存しました')
@@ -531,6 +633,42 @@ class ArtworkDownloader {
     setTimeout(() => {
       document.body.removeChild(successDiv)
     }, 3000)
+  }
+
+  // エラーログを表示
+  showErrorLogs() {
+    try {
+      const logs = JSON.parse(localStorage.getItem('error_logs') || '[]')
+      
+      if (logs.length === 0) {
+        alert('エラーログはありません')
+        return
+      }
+      
+      // エラーログをコンソールに出力
+      console.group('🐛 Error Logs')
+      logs.forEach((log, index) => {
+        console.group(`${index + 1}. ${log.service} - ${log.action} (${log.timestamp})`)
+        console.log('Error:', log.error)
+        console.log('Context:', log.context)
+        console.log('Environment:', {
+          userAgent: log.userAgent,
+          url: log.url,
+          isProduction: log.isProduction
+        })
+        console.groupEnd()
+      })
+      console.groupEnd()
+      
+      // ユーザーに通知
+      const logCount = logs.length
+      const latestLog = logs[logs.length - 1]
+      alert(`エラーログ ${logCount} 件をコンソールに出力しました。\n\n最新のエラー:\n${latestLog.service} - ${latestLog.action}\n${latestLog.error.message}\n\n詳細は開発者ツールのコンソールを確認してください。`)
+      
+    } catch (e) {
+      console.error('エラーログの読み取りに失敗:', e)
+      alert('エラーログの読み取りに失敗しました')
+    }
   }
 }
 
