@@ -263,19 +263,20 @@ class ArtworkDownloader {
           
           data.results.forEach(item => {
             if (item.artworkUrl100) {
-              const artworkUrl600 = item.artworkUrl100.replace('100x100bb', '600x600bb')
+              const artworkUrl300 = item.artworkUrl100.replace('100x100bb', '300x300bb')
               const artworkUrlLarge = item.artworkUrl100.replace('100x100bb', '1200x1200bb')
               
-              const key = artworkUrl600
+              const key = artworkUrl300
               
               if (!uniqueArtworks.has(key)) {
                 uniqueArtworks.set(key, {
                   title: item.trackName || item.collectionName || 'Unknown',
                   artist: item.artistName || 'Unknown Artist',
                   album: item.collectionName || '',
-                  imageUrl: artworkUrlLarge,
+                  imageUrl: artworkUrl300, // サムネイル用は300x300
+                  downloadUrl: artworkUrlLarge, // ダウンロード用は1200x1200
                   source: 'iTunes',
-                  resolution: '1200x1200'
+                  resolution: '300x300'
                 })
               }
             }
@@ -318,7 +319,12 @@ class ArtworkDownloader {
       this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5YTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='
     }
     img.addEventListener('click', () => {
-      this.showImageModal(artwork)
+      // モーダル用には高解像度版を使用
+      const modalArtwork = { ...artwork }
+      if (artwork.downloadUrl) {
+        modalArtwork.imageUrl = artwork.downloadUrl
+      }
+      this.showImageModal(modalArtwork)
     })
 
     // 情報セクションを作成
@@ -353,7 +359,9 @@ class ArtworkDownloader {
     downloadBtn.className = 'download-btn'
     downloadBtn.textContent = '📥 ダウンロード (JPG)'
     downloadBtn.addEventListener('click', () => {
-      this.downloadArtwork(artwork.imageUrl, artwork.artist, artwork.title, index)
+      // ダウンロード用URLがある場合は使用、なければ表示用URLを使用
+      const downloadUrl = artwork.downloadUrl || artwork.imageUrl
+      this.downloadArtwork(downloadUrl, artwork.artist, artwork.title, index)
     })
 
     // カードに要素を追加

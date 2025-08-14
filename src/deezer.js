@@ -150,13 +150,17 @@ class DeezerAPI {
             // cover_medium: 250x250
             // cover_big: 500x500
             // cover_xl: 1000x1000
+            const thumbnailUrl = track.album.cover_medium || track.album.cover_small
+            const downloadUrl = track.album.cover_xl || track.album.cover_big || track.album.cover_medium
+            
             uniqueAlbums.set(albumKey, {
               title: track.title || 'Unknown',
               artist: track.artist ? track.artist.name : 'Unknown Artist',
               album: track.album.title || '',
-              imageUrl: track.album.cover_xl || track.album.cover_big || track.album.cover_medium,
+              imageUrl: thumbnailUrl, // サムネイル用は250x250
+              downloadUrl: downloadUrl, // ダウンロード用は高解像度
               source: 'Deezer',
-              resolution: track.album.cover_xl ? '1000x1000' : '500x500',
+              resolution: '250x250',
               preview: track.preview // 30秒のプレビューURL
             })
           }

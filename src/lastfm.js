@@ -229,17 +229,19 @@ class LastFmAPI {
               }
             })
             
-            // 最大解像度の画像を選択
-            const imageUrl = images.mega || images.extralarge || images.large || images.medium
+            // サムネイル用とダウンロード用の画像URL
+            const thumbnailUrl = images.medium || images.large || images.small
+            const downloadUrl = images.mega || images.extralarge || images.large || images.medium
             
-            if (imageUrl && imageUrl !== '') {
+            if (thumbnailUrl && thumbnailUrl !== '') {
               results.push({
                 title: req.track || album.name || 'Unknown',
                 artist: album.artist || 'Unknown Artist',
                 album: album.name || '',
-                imageUrl: imageUrl,
+                imageUrl: thumbnailUrl, // サムネイル用は中解像度
+                downloadUrl: downloadUrl, // ダウンロード用は高解像度
                 source: 'Last.fm',
-                resolution: images.mega ? '300x300+' : '300x300'
+                resolution: '300x300'
               })
             }
           }
