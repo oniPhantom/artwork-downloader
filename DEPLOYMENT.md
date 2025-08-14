@@ -66,10 +66,29 @@ api/proxy.js                  # Serverless Function
 
 ## 🔍 トラブルシューティング
 
-### デプロイが失敗する場合:
-1. GitHub Secretsが正しく設定されているか確認
-2. Vercelプロジェクトの設定を確認
-3. ビルドログでエラーメッセージを確認
+### ❌ エラー: "No existing credentials found"
+**原因**: VERCEL_TOKENが設定されていない
+**解決**: 
+1. VercelでTokenを作成
+2. GitHub Secretsに`VERCEL_TOKEN`を追加
+3. Tokenの値が正しくコピーされているか確認
+
+### ❌ エラー: "Input required and not supplied: vercel-token"  
+**原因**: GitHub Actionでトークンが取得できない
+**解決**:
+1. GitHub Secrets名が`VERCEL_TOKEN`（大文字小文字一致）か確認
+2. リポジトリの Settings > Secrets で設定状況確認
+
+### ❌ ビルドが失敗する場合:
+**確認項目**:
+1. `npm run build`がローカルで成功するか
+2. Node.jsバージョンが18以上か
+3. package.jsonの依存関係が正しいか
+
+### ✅ デプロイ成功の確認:
+1. GitHub Actions のログで緑チェック
+2. Vercel DashboardでDeployment Status確認
+3. 本番URLでアプリが動作するか確認
 
 ### API接続エラーの場合:
 1. Serverless Functionが正しくデプロイされているか確認
