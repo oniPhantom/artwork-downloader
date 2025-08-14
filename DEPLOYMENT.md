@@ -2,36 +2,42 @@
 
 ## 🚀 自動デプロイの設定手順
 
-### 1. Vercelプロジェクトの作成
+### 1. VERCEL_TOKEN の取得
 
-1. [Vercel](https://vercel.com/)にログイン
-2. "New Project"をクリック
-3. GitHubリポジトリを選択してインポート
-4. Framework Preset: "Vite"を選択
-5. Build and Output Settings:
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-6. "Deploy"をクリック
+#### 手順:
+1. [Vercel](https://vercel.com/)にGitHubアカウントでログイン
+2. 右上のアカウントアイコン → **"Settings"**
+3. 左サイドバーの **"Tokens"** をクリック
+4. **"Create Token"** をクリック
+5. Token name: `GitHub Actions` (任意の名前)
+6. Scope: **"Full Account"** を選択
+7. **"Create"** をクリック
+8. 表示されたトークンをコピー（⚠️ 一度しか表示されません）
 
 ### 2. GitHub Secrets の設定
 
-GitHubリポジトリの Settings > Secrets and variables > Actions で以下を追加：
+#### 手順:
+1. GitHubリポジトリの **Settings** タブ
+2. **"Secrets and variables"** > **"Actions"**
+3. **"New repository secret"** をクリック
+4. 以下のSecretを追加:
 
+| Name | Value | 取得方法 |
+|------|-------|----------|
+| `VERCEL_TOKEN` | `vercel_xxxxxxxxx...` | 上記で作成したトークン |
+
+**⚠️ 重要**: `VERCEL_ORG_ID`と`VERCEL_PROJECT_ID`は不要です（`.vercel/project.json`から自動取得）
+
+### 3. プロジェクトがVercelにリンクされていることを確認
+
+リポジトリには既に `.vercel/project.json` が含まれているので設定完了です:
+```json
+{
+  "projectId": "prj_bnKhiahR7EwKzxI77WEe6J4RaGGZ",
+  "orgId": "team_KSObQtbqOAdmfU90wdKYBeAQ", 
+  "projectName": "artwork-downloader"
+}
 ```
-VERCEL_TOKEN: Vercelアカウント設定から取得
-VERCEL_ORG_ID: Vercelプロジェクト設定から取得  
-VERCEL_PROJECT_ID: Vercelプロジェクト設定から取得
-```
-
-#### 各値の取得方法:
-
-**VERCEL_TOKEN:**
-1. Vercel Dashboard > Settings > Tokens
-2. "Create Token"で新しいトークンを作成
-
-**VERCEL_ORG_ID & VERCEL_PROJECT_ID:**
-1. プロジェクトルートで `npx vercel link` 実行
-2. `.vercel/project.json`ファイルから値をコピー
 
 ### 3. 自動デプロイの確認
 
