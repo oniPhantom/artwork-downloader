@@ -11,6 +11,10 @@
       <header class="header">
         <h1>🎵 アートワーク ダウンローダー</h1>
         <p>アーティスト名と曲名を入力して、アルバムアートを取得・ダウンロードしよう</p>
+        <div class="api-notice">
+          <p>⚠️ iTunes APIが利用できない場合は、DeezerやLast.fmから取得します</p>
+          <button id="api-settings-btn" class="settings-btn">⚙️ API設定</button>
+        </div>
       </header>
 
       <main class="main">
@@ -47,6 +51,25 @@
           </div>
         </div>
       </main>
+
+      <!-- API設定モーダル -->
+      <div id="api-settings-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <h2>API設定</h2>
+          <p>より良い検索結果を得るために、APIキーを設定できます（オプション）</p>
+          
+          <div class="api-setting">
+            <h3>Last.fm API</h3>
+            <p><a href="https://www.last.fm/api/account/create" target="_blank">APIキーを取得</a></p>
+            <input type="text" id="lastfm-api-key" placeholder="Last.fm APIキー（オプション）">
+          </div>
+          
+          <div class="modal-buttons">
+            <button id="save-api-settings" class="primary-btn">保存</button>
+            <button id="close-api-settings" class="secondary-btn">閉じる</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="/src/main.js"></script>

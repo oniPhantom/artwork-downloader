@@ -1,15 +1,49 @@
 import './style.css'
+import LastFmAPI from './lastfm.js'
+import DeezerAPI from './deezer.js'
 
 class ArtworkDownloader {
   constructor() {
     this.initEventListeners()
     this.pendingRequests = new Map() // JSONP リクエスト管理
     this.callbackCounter = 0 // 一意なコールバック名生成
+    
+    // 代替API
+    this.lastfmAPI = new LastFmAPI()
+    this.deezerAPI = new DeezerAPI()
   }
 
   initEventListeners() {
     const searchForm = document.getElementById('search-form')
     searchForm.addEventListener('submit', this.handleSearch.bind(this))
+    
+    // API設定モーダル
+    const apiSettingsBtn = document.getElementById('api-settings-btn')
+    const apiSettingsModal = document.getElementById('api-settings-modal')
+    const saveApiSettingsBtn = document.getElementById('save-api-settings')
+    const closeApiSettingsBtn = document.getElementById('close-api-settings')
+    
+    apiSettingsBtn.addEventListener('click', () => {
+      this.showApiSettings()
+    })
+    
+    saveApiSettingsBtn.addEventListener('click', () => {
+      this.saveApiSettings()
+    })
+    
+    closeApiSettingsBtn.addEventListener('click', () => {
+      this.hideApiSettings()
+    })
+    
+    // モーダル外クリックで閉じる
+    apiSettingsModal.addEventListener('click', (e) => {
+      if (e.target === apiSettingsModal) {
+        this.hideApiSettings()
+      }
+    })
+    
+    // 保存されたAPIキーを読み込む
+    this.loadApiSettings()
   }
 
   async handleSearch(event) {
@@ -47,15 +81,53 @@ class ArtworkDownloader {
 
   async searchArtworks(artist, song) {
     const artworks = []
+    const errors = []
 
+    // iTunes API
     try {
       const itunesResults = await this.searchiTunes(artist, song)
       artworks.push(...itunesResults)
     } catch (error) {
       console.warn('iTunes検索エラー:', error)
+      errors.push('iTunes')
     }
 
-    return artworks
+    // Deezer API（iTunesが失敗または結果が少ない場合）
+    if (artworks.length < 6) {
+      try {
+        const deezerResults = await this.deezerAPI.search(artist, song)
+        artworks.push(...deezerResults)
+      } catch (error) {
+        console.warn('Deezer検索エラー:', error)
+        errors.push('Deezer')
+      }
+    }
+
+    // Last.fm API（まだ結果が少ない場合）
+    if (artworks.length < 6) {
+      try {
+        const lastfmResults = await this.lastfmAPI.search(artist, song)
+        artworks.push(...lastfmResults)
+      } catch (error) {
+        console.warn('Last.fm検索エラー:', error)
+        errors.push('Last.fm')
+      }
+    }
+
+    // 全てのAPIが失敗した場合
+    if (artworks.length === 0 && errors.length >= 3) {
+      throw new Error('全ての音楽サービスへの接続に失敗しました')
+    }
+
+    // 重複を除去（同じ画像URLを持つものを削除）
+    const uniqueArtworks = new Map()
+    artworks.forEach(artwork => {
+      if (!uniqueArtworks.has(artwork.imageUrl)) {
+        uniqueArtworks.set(artwork.imageUrl, artwork)
+      }
+    })
+
+    return Array.from(uniqueArtworks.values())
   }
 
   // JSONP でiTunes APIを呼び出し
@@ -63,6 +135,18 @@ class ArtworkDownloader {
     return new Promise((resolve, reject) => {
       const callbackName = `iTunes_callback_${++this.callbackCounter}`
       const script = document.createElement('script')
+      
+      // URLの検証 - iTunes APIのみ許可
+      try {
+        const parsedUrl = new URL(url)
+        if (!parsedUrl.hostname.endsWith('apple.com')) {
+          reject(new Error('許可されていないURLです'))
+          return
+        }
+      } catch (e) {
+        reject(new Error('無効なURLです'))
+        return
+      }
       
       // グローバルコールバック関数を設定
       window[callbackName] = (data) => {
@@ -173,30 +257,58 @@ class ArtworkDownloader {
     const card = document.createElement('div')
     card.className = 'artwork-card'
 
-    card.innerHTML = `
-      <img 
-        src="${artwork.imageUrl}" 
-        alt="${artwork.title} - ${artwork.artist}"
-        class="artwork-image"
-        loading="lazy"
-        onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5YTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='"
-      >
-      <div class="artwork-info">
-        <h3>${artwork.title}</h3>
-        <p>アーティスト: ${artwork.artist}</p>
-        ${artwork.album ? `<p>アルバム: ${artwork.album}</p>` : ''}
-        <p>解像度: ${artwork.resolution}</p>
-        <span class="source-badge">${artwork.source}</span>
-      </div>
-      <button class="download-btn" onclick="artworkDownloader.downloadArtwork('${artwork.imageUrl}', '${artwork.artist}', '${artwork.title}', ${index})">
-        📥 ダウンロード (JPG)
-      </button>
-    `
-
-    const img = card.querySelector('.artwork-image')
+    // 画像要素を作成
+    const img = document.createElement('img')
+    img.src = artwork.imageUrl
+    img.alt = `${artwork.title} - ${artwork.artist}`
+    img.className = 'artwork-image'
+    img.loading = 'lazy'
+    img.onerror = function() {
+      this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5YTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='
+    }
     img.addEventListener('click', () => {
       this.showImageModal(artwork)
     })
+
+    // 情報セクションを作成
+    const infoDiv = document.createElement('div')
+    infoDiv.className = 'artwork-info'
+
+    const title = document.createElement('h3')
+    title.textContent = artwork.title
+    infoDiv.appendChild(title)
+
+    const artistP = document.createElement('p')
+    artistP.textContent = `アーティスト: ${artwork.artist}`
+    infoDiv.appendChild(artistP)
+
+    if (artwork.album) {
+      const albumP = document.createElement('p')
+      albumP.textContent = `アルバム: ${artwork.album}`
+      infoDiv.appendChild(albumP)
+    }
+
+    const resolutionP = document.createElement('p')
+    resolutionP.textContent = `解像度: ${artwork.resolution}`
+    infoDiv.appendChild(resolutionP)
+
+    const sourceBadge = document.createElement('span')
+    sourceBadge.className = 'source-badge'
+    sourceBadge.textContent = artwork.source
+    infoDiv.appendChild(sourceBadge)
+
+    // ダウンロードボタンを作成
+    const downloadBtn = document.createElement('button')
+    downloadBtn.className = 'download-btn'
+    downloadBtn.textContent = '📥 ダウンロード (JPG)'
+    downloadBtn.addEventListener('click', () => {
+      this.downloadArtwork(artwork.imageUrl, artwork.artist, artwork.title, index)
+    })
+
+    // カードに要素を追加
+    card.appendChild(img)
+    card.appendChild(infoDiv)
+    card.appendChild(downloadBtn)
 
     return card
   }
@@ -352,6 +464,73 @@ class ArtworkDownloader {
 
   hideResults() {
     document.getElementById('results').style.display = 'none'
+  }
+
+  showApiSettings() {
+    const modal = document.getElementById('api-settings-modal')
+    modal.style.display = 'flex'
+    
+    // 現在の設定を表示
+    const lastfmKey = localStorage.getItem('lastfm_api_key') || ''
+    document.getElementById('lastfm-api-key').value = lastfmKey
+  }
+
+  hideApiSettings() {
+    document.getElementById('api-settings-modal').style.display = 'none'
+  }
+
+  saveApiSettings() {
+    const lastfmKey = document.getElementById('lastfm-api-key').value.trim()
+    
+    // LocalStorageに保存（注意: より安全な方法として、バックエンドでの管理を推奨）
+    if (lastfmKey) {
+      try {
+        // 簡易的な検証（実際のAPIキーは32文字の16進数）
+        if (lastfmKey.length !== 32 || !/^[a-f0-9]+$/i.test(lastfmKey)) {
+          this.showError('無効なAPIキー形式です（32文字の16進数である必要があります）')
+          return
+        }
+        localStorage.setItem('lastfm_api_key', lastfmKey)
+        this.lastfmAPI.apiKey = lastfmKey
+      } catch (e) {
+        this.showError('APIキーの保存に失敗しました')
+        return
+      }
+    } else {
+      localStorage.removeItem('lastfm_api_key')
+      this.lastfmAPI.apiKey = null
+    }
+    
+    this.hideApiSettings()
+    this.showSuccess('API設定を保存しました')
+  }
+
+  loadApiSettings() {
+    const lastfmKey = localStorage.getItem('lastfm_api_key')
+    if (lastfmKey) {
+      this.lastfmAPI.apiKey = lastfmKey
+    }
+  }
+
+  showSuccess(message) {
+    const successDiv = document.createElement('div')
+    successDiv.className = 'success-message'
+    successDiv.textContent = '✅ ' + message
+    successDiv.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 4px;
+      z-index: 1000;
+    `
+    document.body.appendChild(successDiv)
+    
+    setTimeout(() => {
+      document.body.removeChild(successDiv)
+    }, 3000)
   }
 }
 

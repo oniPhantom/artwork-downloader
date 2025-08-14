@@ -297,6 +297,136 @@ body {
   }
 }
 
+/* API設定通知 */
+.api-notice {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.api-notice p {
+  color: var(--warning-color);
+  margin-bottom: 0.5rem;
+}
+
+.settings-btn {
+  background: var(--secondary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.settings-btn:hover {
+  background: #4b5563;
+}
+
+/* モーダル */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.modal-content p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.api-setting {
+  margin-bottom: 1.5rem;
+}
+
+.api-setting h3 {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.api-setting p {
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.api-setting a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.api-setting a:hover {
+  text-decoration: underline;
+}
+
+.api-setting input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.primary-btn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.primary-btn:hover {
+  background: var(--primary-hover);
+}
+
+.secondary-btn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  background: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.secondary-btn:hover {
+  background: #4b5563;
+}
+
 @media (max-width: 480px) {
   #app {
     padding: 0.75rem;
@@ -369,5 +499,13 @@ body {
   .results h2 {
     font-size: 1.5rem;
     margin-bottom: 1.5rem;
+  }
+  
+  .modal-content {
+    padding: 1.5rem;
+  }
+  
+  .api-notice {
+    font-size: 0.85rem;
   }
 }
