@@ -1,0 +1,38 @@
+{
+  "name": "アートワーク ダウンローダー",
+  "short_name": "アートワーク",
+  "description": "アーティスト名と曲名を入力して、高解像度のアルバムアートを検索・ダウンロードできるWebアプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon-16x16.svg",
+      "sizes": "16x16",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-32x32.svg", 
+      "sizes": "32x32",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180", 
+      "type": "image/svg+xml",
+      "purpose": "apple-touch-icon"
+    }
+  ],
+  "categories": ["music", "entertainment", "utilities"],
+  "screenshots": []
+}

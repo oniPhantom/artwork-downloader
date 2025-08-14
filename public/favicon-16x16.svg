@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <defs>
+    <linearGradient id="musicGradient16" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- シンプルな音符デザイン（16x16用） -->
+  <ellipse cx="4" cy="13" rx="1.8" ry="1.2" fill="url(#musicGradient16)"/>
+  <ellipse cx="11" cy="11.5" rx="1.8" ry="1.2" fill="url(#musicGradient16)"/>
+  
+  <!-- 音符の棒 -->
+  <rect x="5.5" y="3" width="1" height="10" fill="url(#musicGradient16)"/>
+  <rect x="12.5" y="2" width="1" height="9.5" fill="url(#musicGradient16)"/>
+  
+  <!-- 音符をつなぐ線 -->
+  <path d="M6.5 5 L12.5 3.5 L12.5 5 L6.5 6.5 Z" fill="url(#musicGradient16)"/>
+  <path d="M6.5 8 L12.5 6.5 L12.5 8 L6.5 9.5 Z" fill="url(#musicGradient16)"/>
+</svg>

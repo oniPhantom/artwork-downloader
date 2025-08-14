@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="musicGradient32" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 音符のメインボディ -->
+  <ellipse cx="9" cy="25" rx="3.5" ry="2.5" fill="url(#musicGradient32)"/>
+  <ellipse cx="23" cy="22" rx="3.5" ry="2.5" fill="url(#musicGradient32)"/>
+  
+  <!-- 音符の棒 -->
+  <rect x="12" y="8" width="2" height="17" fill="url(#musicGradient32)"/>
+  <rect x="26" y="6" width="2" height="16" fill="url(#musicGradient32)"/>
+  
+  <!-- 音符をつなぐ線 -->
+  <path d="M14 11 L26 8 L26 11 L14 14 Z" fill="url(#musicGradient32)"/>
+  <path d="M14 16 L26 13 L26 16 L14 19 Z" fill="url(#musicGradient32)"/>
+  
+  <!-- 装飾的な要素 -->
+  <circle cx="5" cy="12" r="1.5" fill="url(#musicGradient32)" opacity="0.7"/>
+  <circle cx="30" cy="5" r="1.2" fill="url(#musicGradient32)" opacity="0.7"/>
+  <circle cx="2" cy="18" r="1" fill="url(#musicGradient32)" opacity="0.5"/>
+</svg>

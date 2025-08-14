@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <defs>
+    <linearGradient id="backgroundGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="musicGradientLarge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f8fafc;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景 -->
+  <rect width="180" height="180" rx="40" ry="40" fill="url(#backgroundGradient)"/>
+  
+  <!-- メイン音符 -->
+  <ellipse cx="65" cy="140" rx="18" ry="12" fill="url(#musicGradientLarge)"/>
+  <ellipse cx="125" cy="125" rx="18" ry="12" fill="url(#musicGradientLarge)"/>
+  
+  <!-- 音符の棒 -->
+  <rect x="80" y="50" width="8" height="90" fill="url(#musicGradientLarge)"/>
+  <rect x="140" y="40" width="8" height="85" fill="url(#musicGradientLarge)"/>
+  
+  <!-- 音符をつなぐ線 -->
+  <path d="M88 65 L140 50 L140 65 L88 80 Z" fill="url(#musicGradientLarge)"/>
+  <path d="M88 90 L140 75 L140 90 L88 105 Z" fill="url(#musicGradientLarge)"/>
+  
+  <!-- 装飾的な音符 -->
+  <circle cx="35" cy="70" r="6" fill="url(#musicGradientLarge)" opacity="0.8"/>
+  <circle cx="155" cy="45" r="5" fill="url(#musicGradientLarge)" opacity="0.8"/>
+  <circle cx="25" cy="110" r="4" fill="url(#musicGradientLarge)" opacity="0.6"/>
+  <circle cx="165" cy="85" r="3" fill="url(#musicGradientLarge)" opacity="0.6"/>
+</svg>
